@@ -55,7 +55,7 @@ function RuleSetting() {
       await storage.rule.deleteOne(id)
       updateRuleConfig()
 
-      analytics.fireEvent("rule_delete", {
+      await analytics.fireEvent("rule_delete", {
         total_count: ruleConfigs.length - 1
       })
     },
@@ -63,7 +63,7 @@ function RuleSetting() {
       await storage.rule.addOne(record)
       updateRuleConfig()
 
-      analytics.fireEvent("rule_add", {
+      await analytics.fireEvent("rule_add", {
         total_count: ruleConfigs.length + 1
       })
     },

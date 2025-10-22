@@ -30,3 +30,4 @@ src/utils/secret.js
 .VSCodeCounter/
 
 builderEnv.temp.js
+/.idea

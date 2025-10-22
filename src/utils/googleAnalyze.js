@@ -1,11 +1,10 @@
-import { nanoid } from "nanoid"
+import {nanoid} from "nanoid"
 
-import { isDevRuntime } from "./channelHelper"
-import { getUserAgent } from "./googleAnalyzeHelper"
-import secret from "./secret"
-
-const GA_ENDPOINT = "https://www.google-analytics.com/mp/collect"
-const GA_DEBUG_ENDPOINT = "https://www.google-analytics.com/debug/mp/collect"
+import {isDevRuntime} from "./channelHelper"
+import {getUserAgent} from "./googleAnalyzeHelper"
+import secret, { GA_DEBUG_ENDPOINT, GA_ENDPOINT } from "./secret"
+// 引入 FingerprintJS
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 // Get via https://developers.google.com/analytics/devguides/collection/protocol/ga4/sending-events?client_type=gtag#recommended_parameters_for_reports
 const MEASUREMENT_ID = secret.GA_MEASUREMENT_ID
@@ -17,6 +16,7 @@ const SESSION_EXPIRATION_IN_MIN = 30
 
 export class Analytics {
   constructor(debug = false) {
+    this.visitorId= ''
     this.debug = debug
   }
 
@@ -28,6 +28,14 @@ export class Analytics {
     if (!clientId) {
       // Generate a unique client ID, the actual value is not relevant
       clientId = nanoid()
+      // 初始化 FingerprintJS
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const visitorId = result.visitorId;
+      console.log("瀏覽器指紋：" + visitorId);
+      console.log('result components:', result.components);//瀏覽器指紋生成依賴環境變量
+      this.visitorId = result.visitorId;
+      clientId = this.visitorId
       await chrome.storage.local.set({ clientId })
     }
     return clientId
@@ -82,16 +90,21 @@ export class Analytics {
       params.engagement_time_msec = DEFAULT_ENGAGEMENT_TIME_MSEC
     }
 
+    let GAGA_ENDPOINT = this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT
+    if (!GAGA_ENDPOINT || !MEASUREMENT_ID || !API_SECRET) {
+      console.error("Google Analytics GA params null")
+      return
+    }
+
     try {
       const response = await fetch(
-        `${
-          this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT
-        }?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+        `${GAGA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
         {
           method: "POST",
           headers: { "User-Agent": ua },
           body: JSON.stringify({
             client_id: await this.getOrCreateClientId(),
+            visitorId: this.visitorId,
             events: [
               {
                 name,

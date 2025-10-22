@@ -42,5 +42,11 @@ export const AppListStyle = styled.div`
 
   .not-enable {
     color: #cccccc;
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: grayscale(100%);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
   }
 `

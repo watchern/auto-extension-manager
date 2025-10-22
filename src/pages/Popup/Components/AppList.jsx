@@ -35,7 +35,8 @@ const AppList = memo(({ items }) => {
   return (
     <AppListStyle>
       {contextHolder}
-      <ul>
+      <ul
+        style={{ backgroundColor: "hsla(0,0%,80%,.2)" }}>
         {items.map((item) => {
           return (
             <li
